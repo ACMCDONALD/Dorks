@@ -1,0 +1,348 @@
+#!/bin/bash
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#| Name:          dorks v0.1.3                             |#
+#| Description:   Allow users to input search terms.       |#
+#|                Then run custom, precise searches        |#
+#|                on Google for the term(s)/URL requested. |#
+#|                Aids in gathering OSINT.                 |#
+#| Creator:       Andrew McDonald                          |#
+#| Date Created:  March 6, 2023                            |#
+#| Date Modified: April 18, 2023                           |#
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
+#global variables:
+
+#initialize $input
+#will be used in the main loop, but gets called before it has a value.
+#this gives it a value.
+input=0
+#colour variables
+purple="\e[35m"
+normal="\e[0m"
+
+#begin main loop.
+#loop until $input=q
+while [ $input != q ]
+   do
+      #reset search variable values
+      filetype=""
+      url=""
+      search=""
+      term_in=""
+
+      #clear the screen
+      clear
+      #display main menu
+      echo -e ${purple} "_     _     _        _"
+      echo "|| \ || || ||_| ||/ ||_"
+      echo -e  "||_/ ||_|| || \ ||\  _||" ${normal}
+
+      cat << EOF
+
+-----------------------
+|        MENU         |
+|_____________________|
+|                     |
+|  1. Search          |
+|  2. Help            |
+|  3. About           |
+|  4. Quit            |
+|_____________________|
+
+EOF
+
+      #take main input from user
+      read -p "" input
+
+      #branch based on $input
+      case $input in
+        1)
+          #case 1 - search
+          #clear the screen
+          clear
+          #display search menu options.
+
+      echo -e ${purple}" __     __    __      __    __"
+      echo "||__  ||__  ||__||  ||__| ||    ||__||"
+      echo -e " __|| ||__  ||  ||  || \  ||__  ||  ||" ${normal}
+      cat << EOF
+
+_______________________________
+| Choose a website to search: |
+|                             |
+|   1. Facebook               |
+|   2. Instagram              |
+|   3. Amazon                 |
+|   4. Youtube                |
+|   5. Twitter                |
+|   6. Reddit                 |
+|   7. Enter your own URL     |
+|   8. No site (just Google)  |
+|_____________________________|
+
+EOF
+
+      #take input into $url_sel variable
+      read -p "" url_sel
+      #take input and assign a website to variable $url_sel
+
+      #error catching
+      #while $url_sel is not equal to 1-8
+      while  ! [[ $url_sel =~ ^[1-8]$ ]]; do
+      #^[1-8]$ -- ^ - start, $ - end, [1-8] - string
+         #error message
+         echo "please make a selection between 1-8"
+         #ask for input again
+         read -p "Choose a website to search: " url_sel
+      done
+
+      case $url_sel in
+         1) #facebook
+            url="inurl:facebook.com"
+            ;;
+         2) #instagram
+            url="inurl:instagram.com"
+            ;;
+         3) #amazon
+            url="inurl:amazon.com"
+            ;;
+         4) #youtube
+            url="inurl:youtube.com"
+            ;;
+         5) #twitter
+            url="inurl:twitter.com"
+            ;;
+         6) #reddit
+            url="inurl:reddit.com"
+            ;;
+         7) #custom
+            echo Enter your URL
+            echo Format: facebook.com
+            #take custom website input into $custom
+            read -p "" custom
+            #assign custom to $url
+            url="inurl:"$custom
+            ;;
+         8) #google
+            url=""
+            #search type menu
+            cat << EOF
+
+______________________________________
+| Select the search you want to use: |
+|                                    |
+|   1. Search Filetype               |
+|   2. Search Title                  |
+|   3. Search Related                |
+|   4. Search Text                   |
+|____________________________________|
+
+
+EOF
+             #take input into $search_sel variable
+             read -p "" search_sel
+
+             #error catching
+             #while $search_sel is not equal to 1-4
+             while  ! [[ $search_sel =~ ^[1-4]$ ]]; do
+             #^[1-4]$ -- ^ - start, $ - end, [1-4] - string
+                #error message
+                echo "please make a selection between 1-4"
+                #ask for input again
+                read -p "Select the search you want to use: " search_sel
+             done
+
+             case $search_sel in
+                1)
+                   #filetype
+                   echo&&echo
+                   #take input into $filetype varibale
+                   read -p "Enter a filetype to search (format: ppt, pdf): " filetype
+                   search="filetype:"$filetype
+                   ;;
+                2)
+                   #title
+                   cat << EOF
+
+______________________________________
+|  How do you want to search:         |
+|                                     |
+|   1. All keywords are in the title  |
+|   2. Any keyword in the title       |
+|_____________________________________|
+
+EOF
+                  #spacing
+                  echo
+                  #take input into $title_sel variable
+                  read -p "" title_sel
+
+                  #error catching
+                  #while $title_sel is not equal to 1-2
+                  while  ! [[ $title_sel =~ ^[1-2]$ ]]; do
+                  #^[1-2]$ -- ^ - start, $ - end, [1-2] - string
+                     #error message
+                     echo "please make a selection between 1-2"
+                     #ask for input again
+                     read -p "How do you want to search: " title_sel
+                  done
+
+                  case $title_sel in
+                     1) #all in title
+                        search="allintitle:"
+                        ;;
+                     2) #in title
+                        search="intitle:"
+                        ;;
+                  esac
+                  ;;
+                3)
+                   #related
+                   search="related:"
+                   ;;
+                4)
+                   #text
+                   cat << EOF
+
+___________________________________________
+| How do you want to search:               |
+|                                          |
+|   1. All keywords are used in the search |
+|   2. Any keyword will be searched        |
+|__________________________________________|
+
+EOF
+                   #take inout into $text_sel variable
+                   read -p "" text_sel
+
+                   #error catching
+                   #while $text_sel is not equal to 1-2
+                   while  ! [[ $text_sel =~ ^[1-2]$ ]]; do
+                   #^[1-2]$ -- ^ - start, $ - end, [1-2] - string
+                      #error message
+                      echo "please make a selection between 1-2"
+                      #ask for input again
+                      read -p "How do you want to search: " text_sel
+                  done
+
+                   case $text_sel in
+                      1) #all in text
+                         search="allintext:"
+                         ;;
+                      2) #in text
+                         search="intext:"
+                         ;;
+                   esac
+                ;;
+                esac
+             ;;
+             esac
+
+      #spacing
+      echo&&echo
+
+      #search term
+      #take input into $term_in variable
+      read -p "input search term(s): " term_in
+
+      #open firefox to google.com with search variables
+      #Firefox is the default browser installed in Ubuntu
+      firefox 'https://www.google.com/search?q='"$url"' '"$search"' '"$term_in"'' >/dev/null 2>&1 &
+      #>/dev/null -- redirects the output of the command from the terminal into /dev/null (discards it)
+      #2>&1 -- redirects errors out of the terminal into /dev/null (discards it)
+      #& -- run the command in the background
+
+      #clear the screen
+      clear
+      #pause on search screen in terminal until user hits enter
+      read -p "Press enter to return to main menu" var
+      ;;
+
+    2)
+      #help
+      clear
+
+      echo -e ${purple} "        __        __"
+      echo "||__|| ||__ ||   ||__||"
+      echo -e "||  || ||__ ||__ ||" ${normal}
+      cat << EOF
+
+How to use dorks.sh:
+
+To make a search:
+
+On the main menu choose option 1.
+
+The search menu will appear. Next, select the URL you would like to search.
+If you would like to use a URL that is not in the list, you may select option 7
+to input your own URL using the format <website.com>.
+
+You will then  be prompted to enter your search term(s). These can be entered
+all on the same line, separated by a space.
+
+	example: term1 term2 term3 ...
+
+A browser window will open and perform your search.
+
+If performing a Google search exclusively (8), you will be asked to choose
+the type of search as well as any other options related to your search before
+being prompted for your search terms.
+
+
+Press enter to return to the main menu.
+EOF
+      #pause on help screen in terminal until user hits enter
+      read -p "" var
+    ;;
+
+    3)
+      #about
+      clear
+
+      echo -e ${purple} " __     __    __          ____"
+      echo "||__|| ||__} ||  || ||  ||  ||"
+      echo -e "||  || ||__} ||__|| ||__||  ||" ${normal}
+
+     cat << EOF
+
+Created by: Andrew McDonald
+
+For: Linux Scripting Project - OSYS2020 - April 2023
+
+Version: 0.1.3
+
+Sources:
+
+Hardwick, J. (2020, August 3). Google Search Operators: The Complete List
+   (42 Advanced Operators). ahrefs blog.
+   https://ahrefs.com/blog/google-advanced-search-operators/
+
+Loison, F. (2011) Bash tips: Colours and formatting (ANSI/VT100 Control
+   Sequences. FLoZz' Misc [Blog]. https://misc.flogisoft.com/bash/tip_colors
+   _and_formatting
+
+
+Press any enter to return to the main menu.
+EOF
+
+      #pause on about screen in terminal until user hits enter
+      read -p "" var
+    ;;
+
+   4)
+      #exit
+      #clear the screen
+      clear
+      #goodbye
+      echo Goodbye.
+      #hang for 1 seconds
+      sleep 1
+      #clear the screen
+      clear
+      #break the loop
+      #while condition depends on input!=q
+      input=q
+    ;;
+  esac
+done
